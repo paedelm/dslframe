@@ -1,4 +1,4 @@
-#if INTERACTIVE && !FROMTT
+#if INTERACTIVE // && !FROMTT
 module proc
 #else
 module proc

@@ -16,16 +16,17 @@ let main argv =
         for line in fd2 do printfn "fd2:%s" line
         } |> Async.RunSynchronously
     try 
-        let result = Async.RunSynchronously(downLoadUrl("http://google.com"))
-        printfn "%A" result
-        // let res2 = Async.RunSynchronously(downLoadUrl("http://api.worldbank.org/v2/region?format=xml"))
+        // let result = Async.RunSynchronously(downLoadUrl("http://google.com"))
+        // printfn "%A" result
+        let res2 = Async.RunSynchronously(downLoadUrl("http://api.worldbank.org/v2/region?format=json"))
+        printfn "%A" res2
     with
     | exdl -> 
         printfn "%A" (exdl.GetBaseException())
 
     // for line in outp do printfn "%s" line
     try
-        let jan = allFilesInfo @"c:\ontwikkel"
+        let jan = allFilesInfo @"c:\users\p_ede\projects"
         jan |> Seq.filter (fun (fi) -> fi.Length > 300_000_000L && fi.FullName.EndsWith(@".zip") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
     with
     | exdl -> printfn "%A" (exdl.GetBaseException()) 
