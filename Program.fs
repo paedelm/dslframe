@@ -7,9 +7,16 @@ open Web
 open files
 open FSharp.Data
 open FSharp.Data.JsonExtensions
+type wbregions = XmlProvider<"http://api.worldbank.org/v2/region?format=xml">
 
 [<EntryPoint>]
 let main argv =
+    let result = Async.RunSynchronously(downLoadUrl("http://api.worldbank.org/v2/region?format=xml"))
+    let sample = wbregions.Parse(result)
+    for region in sample.Regions do
+        printfn "%s %s" region.Code region.Name
+
+
     printfn "Hello World from F#!"
     do makeFileTransfers
     async {
@@ -19,7 +26,7 @@ let main argv =
         } |> Async.RunSynchronously
     // let result = Async.RunSynchronously(downLoadUrl("http://google.com"))
     // printfn "%A" result
-    async {
+    let ex1 = async {
         let! resj = downLoadUrl("http://api.worldbank.org/v2/region?format=json")
         let jv = JsonValue.Parse(resj)
         // printfn "%A" jv
@@ -37,19 +44,20 @@ let main argv =
                 printfn "%s: %s" (record?code.AsString()) 
                                  (record?name.AsString())
         | _ -> printfn "failed"        
-    } |> Async.RunSynchronously
-    async {
+    } //|> Async.RunSynchronously
+    let ex2 = async {
         let! resx = downLoadUrl("http://api.worldbank.org/v2/region?format=xml")
         printfn "%A" resx
-    } |> Async.RunSynchronously
-    // Async.Parallel [| dnl1; dnl2 |] |> Async.RunSynchronously
-
-    // for line in outp do printfn "%s" line
+    } 
+    [ex1; ex2] |> Async.Parallel |> Async.RunSynchronously |> ignore
+    
     try
         let jan = allFilesInfo @"c:\users\p_ede\projects"
-        jan |> Seq.filter (fun (fi) -> fi.Length > 300_000_000L && fi.FullName.EndsWith(@".zip") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
+        jan |> Seq.filter (fun (fi) -> fi.Length > 30_000_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
     with
     | exdl -> printfn "%A" (exdl.GetBaseException()) 
+
+    
 
     0 // return an integer exit code
 
