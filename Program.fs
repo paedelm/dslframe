@@ -5,6 +5,8 @@ open Ftest
 open proc
 open Web
 open files
+open Testtmpl
+open Ft
 open FSharp.Data
 open FSharp.Data.JsonExtensions
 type wbregions = XmlProvider<"http://api.worldbank.org/v2/region?format=xml">
@@ -49,13 +51,20 @@ let main argv =
         let! resx = downLoadUrl("http://api.worldbank.org/v2/region?format=xml")
         printfn "%A" resx
     } 
-    [ex1; ex2] |> Async.Parallel |> Async.RunSynchronously |> ignore
+    // [ex1; ex2] |> Async.Parallel |> Async.RunSynchronously |> ignore
     
     try
         let jan = allFilesInfo @"c:\users\p_ede\projects"
-        jan |> Seq.filter (fun (fi) -> fi.Length > 30_000_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
+        jan |> Seq.filter (fun (fi) -> fi.Length > 3_000_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
     with
-    | exdl -> printfn "%A" (exdl.GetBaseException()) 
+    | exdl -> printfn "%A" (exdl.GetBaseException())
+    printfn "%s" (testtmpl "Peter" 60) 
+    let jan = testtmpl2(name="Pieter")
+    printfn "%s" (jan.Format())
+    let anjo = testtmpl2(name="Anjo", age=59, gender=Woman)
+    printfn "%s" (anjo.Format())
+    let wind = WinDirectory(@"c:/ontwikkel")
+    printfn "%s" (shelltemplate PROD wind )
 
     
 
