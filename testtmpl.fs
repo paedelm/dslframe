@@ -42,4 +42,15 @@ cd "{1}"
 ls"""
         String.Format(script, env, path)
 
+    let battemplate (env:Env) (path:WinDirectory) = 
+        let script = """
+echo 0=%0
+echo 1=%1
+echo 2=%2
+echo 3=%3 
+set
+echo env={0}
+echo path={1}"""
+        String.Format(script, env, path)
+
 
