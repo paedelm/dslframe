@@ -73,9 +73,13 @@ let asynctests =
     // [ex1; ex2] |> Async.Parallel |> Async.RunSynchronously |> ignore
     
     try
-        let home = Environment.GetEnvironmentVariable("home")
-        let jan = allFilesInfo (Path.Combine [|home; "projects"|])
-        jan |> Seq.filter (fun (fi) -> fi.Length > 3_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
+        let home = Environment.GetEnvironmentVariable("userprofile")
+        match home with
+        | null -> failwith "environment var userprofile not found!"
+        | dir -> 
+            printfn "search %A for *.dll's of special size" dir
+            let jan = allFilesInfo (Path.Combine [|home; "projects"|])
+            jan |> Seq.filter (fun (fi) -> fi.Length > 3_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
     with
     | exdl -> printfn "%A" (exdl.GetBaseException())
 
