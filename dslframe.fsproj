@@ -9,6 +9,9 @@
     <Compile Include="webclient.fs" />
     <Compile Include="FileTransfer.fs" />
     <Compile Include="testtmpl.fs" />
+    <Compile Include="applications/applicationlist.fs" />
+    <Compile Include="applications/app1.fs" />
+    <Compile Include="applications/app2.fs" />
     <Compile Include="ft.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

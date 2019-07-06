@@ -10,11 +10,17 @@ open Testtmpl
 open Ft
 open FSharp.Data
 open FSharp.Data.JsonExtensions
+open System.Runtime.InteropServices
+// open app1
+// open app2
+open System.Reflection
 
-
+let isWindows = (RuntimeInformation.IsOSPlatform OSPlatform.Windows)
+let isLinux   = (RuntimeInformation.IsOSPlatform OSPlatform.Linux)
+// (*)
 let generateAndExecute =
-    let scriptBase = @"runtime\testpe"
-    let scriptFile = scriptBase + ".bat"
+    let scriptBase = Path.Combine [|"runtime"; "testpe"|]
+    let scriptFile = scriptBase + if isWindows then ".bat" else ".sh"
     let scriptOut  = scriptBase + ".out"
     let scriptErr  = scriptBase + ".err"
     let wind = WinDirectory(@"c:\ontwikkel")
@@ -22,18 +28,19 @@ let generateAndExecute =
     File.WriteAllText(scriptFile, battemplate PROD wind)
     async {
         Directory.CreateDirectory("runtime") |> ignore
-        let fd1,fd2 = runProc "cmd" ("/c " + scriptFile + " param1 param2 param3") None
-        use tf = File.CreateText(scriptOut)
-        for line in fd1 do 
-            printfn "fd1:%s" line
-            tf.WriteLine(line)
+        if isWindows then
+            let fd1,fd2 = runProc "cmd" ("/c " + scriptFile + " param1 param2 param3") None
+            use tf = File.CreateText(scriptOut)
+            for line in fd1 do 
+                printfn "fd1:%s" line
+                tf.WriteLine(line)
 
-        use tf = File.CreateText(scriptErr)
-        for line in fd2 do
-            printfn "fd2:%s" line
-            tf.WriteLine(line)
-        } |> Async.RunSynchronously
-
+            use tf = File.CreateText(scriptErr)
+            for line in fd2 do
+                printfn "fd2:%s" line
+                tf.WriteLine(line)
+            } |> Async.RunSynchronously
+// (*)
 
 type wbregions = XmlProvider<"http://api.worldbank.org/v2/region?format=xml">
 type WBregionsJ = JsonProvider<"http://api.worldbank.org/v2/region?format=json">
@@ -79,7 +86,7 @@ let asynctests =
         | dir -> 
             printfn "search %A for *.dll's of special size" dir
             let jan = allFilesInfo (Path.Combine [|home; "projects"|])
-            jan |> Seq.filter (fun (fi) -> fi.Length > 3_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iter (fun fi -> printfn "%A %s " fi.Length fi.FullName)
+            jan |> Seq.filter (fun (fi) -> fi.Length > 300_000_000L && fi.FullName.EndsWith(@".dll") ) |> Seq.iteri (fun i fi -> printfn "%i: %A %s " i fi.Length fi.FullName)
     with
     | exdl -> printfn "%A" (exdl.GetBaseException())
 
@@ -101,15 +108,23 @@ let iotests =
         File.WriteAllText("runtime/file.sh", shelltemplate PROD wind)
         Directory.CreateDirectory("altrt") |> ignore
         File.WriteAllText("altrt/file.sh", shelltemplate PROD wind)
-        printfn "%s" (File.ReadAllText(".gitignore"))
+        if isWindows then printfn "%s" (File.ReadAllText(".gitignore"))
     with
     | exdl -> printfn "%A" (exdl.GetBaseException())
     // use tf = File.CreateText("runtime/file.sh")
     // tf.WriteLine(shelltemplate PROD wind)
 
+let displayapp (app:seq<ApplicationResource>) =
+    printfn "applicaton seq: %A" app   
 [<EntryPoint>]
 let main argv =
-    printfn "Hello World from F#!"
+    let ass = Assembly.GetExecutingAssembly();
+    let mdls = ass.DefinedTypes
+    printfn "\n===================== Module List ======================\n"
+    mdls |> Seq.filter (fun dt -> dt.Name.StartsWith("app") && dt.IsValueType) |>    Seq.iter (fun m -> printfn "%A" m.GetDeclaredField)
+    displayapp app1.app1
+    displayapp app2.app2
+    printfn "Hello World from F# on OS: %s !" RuntimeInformation.OSDescription
     let result = Async.RunSynchronously(downLoadUrl("http://api.worldbank.org/v2/region?format=xml"))
     let sample = wbregions.Parse(result)
     for region in sample.Regions do
@@ -119,33 +134,34 @@ let main argv =
     // parse Json via type provider
     jsonPTests
 
-    do makeFileTransfers
-    async {
-        Directory.CreateDirectory("runtime") |> ignore
-        let fd1,fd2 = runProc "cmd" "/c hoi.cmd" None
-        use tf = File.CreateText("runtime/hoi.out")
-        for line in fd1 do 
-            printfn "fd1:%s" line
-            tf.WriteLine(line)
+    // do makeFileTransfers
+    if isWindows then
+        async {
+            Directory.CreateDirectory("runtime") |> ignore
+            let fd1,fd2 = runProc "cmd" "/c hoi.cmd" None
+            use tf = File.CreateText("runtime/hoi.out")
+            for line in fd1 do 
+                printfn "fd1:%s" line
+                tf.WriteLine(line)
 
-        use tf = File.CreateText("runtime/hoi.err")
-        for line in fd2 do
-            printfn "fd2:%s" line
-            tf.WriteLine(line)
-        } |> Async.RunSynchronously
+            use tf = File.CreateText("runtime/hoi.err")
+            for line in fd2 do
+                printfn "fd2:%s" line
+                tf.WriteLine(line)
+            } |> Async.RunSynchronously
     // let result = Async.RunSynchronously(downLoadUrl("http://google.com"))
     // printfn "%A" result
 
     // voer de asynctests uit
-    asynctests
+    // asynctests
 
     // voer de templatetests uit
-    templatetests
+    // templatetests
 
     // voer de iotests uit
-    iotests
+    // iotests
 
-    generateAndExecute
+    // generateAndExecute
     
 
     0 // return an integer exit code

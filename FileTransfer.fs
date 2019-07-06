@@ -75,6 +75,14 @@ module Ft
         | UnixFileToQueue of UnixFileToQueueInfo
         | WinFileToQueue of WinFileToQueueInfo
         | FileToFile of FileToFileInfo
+    type MessageTransfer =
+        | QueuetoQueue
+        | TopicToQueue
+
+    type ApplicationResource =
+        | MftResource of FileTransfer
+        | MqResource of MessageTransfer
+        
     let generate ft =
         match ft with
         | UnixFileToQueue ftq -> ftq.Generate
