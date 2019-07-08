@@ -14,6 +14,7 @@ open System.Runtime.InteropServices
 // open app1
 // open app2
 open System.Reflection
+open ApplicationList
 
 let isWindows = (RuntimeInformation.IsOSPlatform OSPlatform.Windows)
 let isLinux   = (RuntimeInformation.IsOSPlatform OSPlatform.Linux)
@@ -124,6 +125,10 @@ let main argv =
     mdls |> Seq.filter (fun dt -> dt.Name.StartsWith("app") && dt.IsValueType) |>    Seq.iter (fun m -> printfn "%A" m.GetDeclaredField)
     displayapp app1.app1
     displayapp app2.app2
+    printfn "================== start  ApplicationList ============"
+    for app in applications do printfn "%A" app
+    printfn "================== end  ApplicationList ============"
+
     printfn "Hello World from F# on OS: %s !" RuntimeInformation.OSDescription
     let result = Async.RunSynchronously(downLoadUrl("http://api.worldbank.org/v2/region?format=xml"))
     let sample = wbregions.Parse(result)
